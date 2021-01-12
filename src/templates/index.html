@@ -15,19 +15,40 @@
         function main() {
             let input = document.getElementById("main-input");
             let url = document.getElementById("main-input").value;
+            let mainBox = document.getElementById("main-box");
             if (url === "") {
-                input.placeholder = "Please enter a URL!";
+                if (input.placeholder === "Please enter a valid URL!") {
+                    input.placeholder = "Come on, enter a valid URL!";
+                }
+                else {
+                    input.placeholder = "Please enter a valid URL!";
+                };
+                if (mainBox.classList.contains("shake")) {
+                    mainBox.classList.remove("shake");
+                    mainBox.classList.add("shake-reverse");
+                }
+                else if (mainBox.classList.contains("shake-reverse")) {
+                    mainBox.classList.remove("shake-reverse");
+                    mainBox.classList.add("shake");
+                }
+                else {
+                    mainBox.classList.add("shake");
+                };
+                // mainBox.style.animation = "shake 0.5s";
+                // mainBox.classList.add("shake");
             };
             input.addEventListener("keypress", function() {
+                mainBox.classList.remove("shake");
+                mainBox.classList.remove("shake-reverse");
                 input.placeholder = "Enter a valid YouTube video link";
             });
         }
     </script>
     <div class="center-container" style="margin-top: 20%;">
         <h1 class="heading display-5" id="main-heading" style="padding-bottom: 3px !important;">YouTube Video Downloader</h1>
-        <div class="input-group input-group-lg">
-            <input id="main-input" type="text" class="form-control" placeholder="Enter a valid YouTube video link" aria-label="" aria-describedby="button-addon2">
-            <button class="btn btn-danger" type="submit" id="button-addon2" onclick="main()">Convert</button>
+        <div class="input-group input-group-lg" id="main-box">
+            <input style="box-shadow: 0px 1px 5px -2px black !important;" id="main-input" type="text" class="form-control" placeholder="Enter a valid YouTube video link" aria-label="" aria-describedby="button-addon2">
+            <button style="box-shadow: 0px 1px 5px -2px black !important;" class="btn btn-danger" type="submit" id="button-addon2" onclick="main()">Convert</button>
         </div>
     </div>
 </body>
