@@ -1,6 +1,5 @@
 * {
-    margin: 0%;
-    background-color: rgb(233, 233, 233);
+    background-color: rgb(216, 216, 216);
 }
 
 .center-container {
@@ -22,10 +21,14 @@
 }
 
 .heading {
-    text-shadow: 0px 0px 2px #909090 !important;
+    text-shadow: 0px 0px 2px #a8a8a8 !important;
     font-size: 40px !important;
     text-align: center;
     color: #ff4c3c;
+    pointer-events: none !important;
+}
+.heading:hover {
+    pointer-events: none !important;
 }
 
 @keyframes shake {
@@ -40,4 +43,47 @@
     80% { transform: translate(-1px, -1px) rotate(1deg); }
     90% { transform: translate(1px, 2px) rotate(0deg); }
     100% { transform: translate(1px, -2px) rotate(-1deg); }
-  }
+}
+
+.info-text{
+    color: #ff4c3c;
+    font-size: 5px;
+    margin: 0 auto !important;
+    margin-top: 0.3rem !important;
+    margin-left: 0.1rem !important;
+    display: none;
+    animation: fade-in 1s ease-in;
+}
+
+.spinner{
+    width: 60px;
+    height: 60px;
+    border: 5px solid transparent;
+    border-top-color: #ff4c3c;
+    border-bottom-color: #ff4c3c;
+    border-radius: 70%;
+    animation: spin .8s ease-in-out infinite;
+    margin: 0 auto !important;
+    margin-top: 0.8rem !important;
+    display: none;
+}
+
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+  
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fade-in {
+    0% { display: none;}
+    100% {display: block;}
+}
+
+@-webkit-keyframes fade-in {
+    0% { display: none;}
+    100% {display: block;}
+}
