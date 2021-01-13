@@ -4,14 +4,16 @@
     <meta charset='utf-8'>
     <title>Page Title</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' type='text/css' href='{{url_for('static', filename='index.css')}}'>
+    <link rel='stylesheet' type='text/css' href="{{url_for('static', filename='index.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='font-awesome-4.7.0/css/font-awesome.min.css')}}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
 </head>
 <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-q2kxQ16AaE6UbzuKqyBE9/u/KzioAlnx2maXQHiDX9d4/zp8Ok3f+M7DPm+Ib6IU" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-pQQkAEnwaBkjpqZ8RU1fF1AKtTcHJwFl3pblpTlHXybJjHpMYo79HY3hIi4NKxyj" crossorigin="anonymous"></script>
-    <script lang="js">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>
         function ytVidURL(url) {
             var p = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
             return (url.match(p)) ? RegExp.$1 : false;
@@ -21,8 +23,14 @@
             setTimeout(function(){classList.remove("shake");}, 500)
         };
         function main() {
+            let downloadCard = document.getElementById("download-card")
+            let convertBox = document.getElementById("button-addon2");
             let input = document.getElementById("main-input");
+            let videoTitle = document.getElementById("video-title");
             let info_text = document.getElementById("info-text");
+            let thumbnail = document.getElementById("thumbnail");
+            let highest = document.getElementById("highest-button");
+            let lowest = document.getElementById("lowest-button");
             let url = document.getElementById("main-input").value;
             let mainBox = document.getElementById("main-box");
             if (url === "") {
@@ -31,7 +39,8 @@
                 shake(mainBox.classList);
             }
             else {
-                if (!ytVidURL(url)) {
+                let code = ytVidURL(url);
+                if (!code) {
                     info_text.innerText = "Invalid YouTube URL entered. Try Again";
                     info_text.style.display = "block";
                     shake(mainBox.classList);
@@ -39,14 +48,24 @@
                 else {
                     let button = document.getElementById("button-addon2");
                     button.disabled = true;
+                    input.disabled = true;
                     info_text.style.fontSize = "8px !important";
                     info_text.style.color = "green !important";
-                    info_text.innerText = "Valid URL entered, coverting video..";
+                    info_text.innerText = "Valid URL entered, searching for the video..";
                     info_text.style.display = "block";
                     let spinner = document.getElementById("loading-spinner");
                     spinner.style.display = "block";
-                    input.disabled = true;
-                    console.log(ytVidURL(url));
+                    // console.log();
+                    convertBox.innerHTML = "Searching...";
+                    $(function() {
+                        $.getJSON(`/convert/${code}`,
+                        function(data) {
+                            downloadCard.style.display = "block";
+                            spinner.style.display = "none";
+                            info_text.innerText = null;
+
+                        });
+                    });
                 };
             };
             // input.addEventListener("keypress", function() {
@@ -60,15 +79,28 @@
         <h1 class="heading display-5" id="main-heading" style="padding-bottom: 3px !important;">YouTube Video Downloader</h1>
         <div id="main-box">
             <div class="input-group input-group-lg">
-                <input style="box-shadow: 0px 1px 5px -2px black !important;" id="main-input" type="text" class="form-control" placeholder="Enter a valid YouTube video link" aria-label="" aria-describedby="button-addon2">
+                <input id="main-input" type="text" class="form-control" placeholder="Enter a valid YouTube video link" aria-label="" aria-describedby="button-addon2">
             </div>
             <div class="d-grid">
-                <button style="box-shadow: 0px 1px 5px -2px black !important;" class="btn btn-danger btn-lg" type="button" id="button-addon2" onclick="main()">Convert</button>
+                <button class="btn btn-danger btn-lg" type="button" id="button-addon2" onclick="main()">Search</button>
             </div>
         </div>
         <!-- <button style="box-shadow: 0px 1px 5px -2px black !important;" class="btn btn-danger" type="button" id="button-addon2" onclick="main()">Convert</button> -->
         <label id = "info-text" for="basic-url" class="info-text form-label text-center fs-6 fw-light fst-italic">Enter a valid YouTube URL</label>
         <div class="spinner" id="loading-spinner"></div>
+        <div class="card download-card mx-auto mt-4" style="display: none;" id="download-card" style="width: 22rem;">
+            <img src="https://i.ytimg.com/vi/5NqitWbBim8/maxresdefault.jpg" id="thumbnail" class="card-img-top thumbnail" alt="Thumbnail" title="Video's Thumbnail">
+            <div class="card-body">
+              <h6 class="card-title text-center text-wrap" id="video-title">Video Title</h6>
+              <div class="d-grid gap-1">
+                <button id="highest-button" type="button" class="btn btn-danger mt-2">Highest: 1060p60</button>
+                <button id="lowest-button" type="button" class="btn btn-danger">Lowest: 480p30</button>
+                <!-- <button type="button" class="btn btn-danger">Highest: 256kbps</button> -->
+              </div>
+            </div>
+          </div>
+          
+        <!-- https://i.ytimg.com/vi/5NqitWbBim8/maxresdefault.jpg -->
         
     </div>
 </body>

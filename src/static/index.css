@@ -1,5 +1,7 @@
-* {
-    background-color: rgb(216, 216, 216);
+body {
+    background: rgb(230, 230, 230) url(http://localhost:5000/static/icons/bg.svg) no-repeat fixed bottom !important;
+    background-size: auto !important;
+    background-color:   rgb(230, 230, 230) !important;
 }
 
 .center-container {
@@ -21,10 +23,9 @@
 }
 
 .heading {
-    text-shadow: 0px 0px 2px #a8a8a8 !important;
-    font-size: 40px !important;
+    font-size: 44px !important;
     text-align: center;
-    color: #ff4c3c;
+    color: #dc3545;
     pointer-events: none !important;
 }
 .heading:hover {
@@ -46,7 +47,7 @@
 }
 
 .info-text{
-    color: #ff4c3c;
+    color: #dc3545;
     font-size: 5px;
     margin: 0 auto !important;
     margin-top: 0.3rem !important;
@@ -59,8 +60,8 @@
     width: 60px;
     height: 60px;
     border: 5px solid transparent;
-    border-top-color: #ff4c3c;
-    border-bottom-color: #ff4c3c;
+    border-top-color: #dc3545;
+    border-bottom-color: #dc3545;
     border-radius: 70%;
     animation: spin .8s ease-in-out infinite;
     margin: 0 auto !important;
@@ -86,4 +87,24 @@
 @-webkit-keyframes fade-in {
     0% { display: none;}
     100% {display: block;}
+}
+
+.download-card {
+    display: none;
+    margin-top: 0.8rem !important;
+}
+
+h6 {
+    pointer-events: none !important;
+}
+
+.icons {
+    float: right !important;
+}
+.thumbnail {
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 }
