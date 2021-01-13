@@ -22,10 +22,14 @@
             classList.add("shake");
             setTimeout(function(){classList.remove("shake");}, 500)
         };
+        function Epoch(date) {
+            return Date.parse(date);
+        };
         function main() {
             let downloadCard = document.getElementById("download-card")
             let convertBox = document.getElementById("button-addon2");
             let input = document.getElementById("main-input");
+            let duration = document.getElementById("duration");
             let videoTitle = document.getElementById("video-title");
             let info_text = document.getElementById("info-text");
             let thumbnail = document.getElementById("thumbnail");
@@ -60,10 +64,21 @@
                     $(function() {
                         $.getJSON(`/convert/${code}`,
                         function(data) {
-                            downloadCard.style.display = "block";
+                            //console.log(data);
+                            var date = new Date(0);
+                            date.setSeconds(data["duration"])
+                            var timeString = date.toISOString().substr(11, 8);
+                            thumbnail.src = data["thumbnail"];
                             spinner.style.display = "none";
                             info_text.innerText = null;
-
+                            videoTitle.innerHTML = data["title"];
+                            input.style.display = "none";
+                            convertBox.style.display = "none";
+                            highest.innerHTML = data["highest"];
+                            lowest.innerHTML = data["lowest"];
+                            duration.innerHTML = timeString.substring(3);
+                            downloadCard.style.display = "block";
+                            
                         });
                     });
                 };
@@ -92,6 +107,7 @@
             <img src="https://i.ytimg.com/vi/5NqitWbBim8/maxresdefault.jpg" id="thumbnail" class="card-img-top thumbnail" alt="Thumbnail" title="Video's Thumbnail">
             <div class="card-body">
               <h6 class="card-title text-center text-wrap" id="video-title">Video Title</h6>
+              <p class="card-text text-center" id = "duration">Time</p>
               <div class="d-grid gap-1">
                 <button id="highest-button" type="button" class="btn btn-danger mt-2">Highest: 1060p60</button>
                 <button id="lowest-button" type="button" class="btn btn-danger">Lowest: 480p30</button>
