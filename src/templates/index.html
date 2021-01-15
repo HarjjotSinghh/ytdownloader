@@ -14,6 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-pQQkAEnwaBkjpqZ8RU1fF1AKtTcHJwFl3pblpTlHXybJjHpMYo79HY3hIi4NKxyj" crossorigin="anonymous"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script>
+        var data_;
         function ytVidURL(url) {
             var p = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
             return (url.match(p)) ? RegExp.$1 : false;
@@ -25,7 +26,7 @@
         function Epoch(date) {
             return Date.parse(date);
         };
-        function main() {
+        function main() {  
             let downloadCard = document.getElementById("download-card")
             let convertBox = document.getElementById("button-addon2");
             let input = document.getElementById("main-input");
@@ -65,10 +66,12 @@
                         $.getJSON(`/convert/${code}`,
                         function(data) {
                             //console.log(data);
+                            data_ = data;
                             var date = new Date(0);
                             date.setSeconds(data["duration"])
                             var timeString = date.toISOString().substr(11, 8);
                             thumbnail.src = data["thumbnail"];
+                            thumbnail.title = data["title"];
                             spinner.style.display = "none";
                             info_text.innerText = null;
                             videoTitle.innerHTML = data["title"];
@@ -78,7 +81,6 @@
                             lowest.innerHTML = data["lowest"];
                             duration.innerHTML = timeString.substring(3);
                             downloadCard.style.display = "block";
-                            
                         });
                     });
                 };
@@ -89,8 +91,32 @@
             //     input.placeholder = "Enter a valid YouTube video link";
             // });
         }
+        function highest_download() {
+            let highest = document.getElementById("highest-button");
+            let lowest = document.getElementById("lowest-button");
+            highest.disabled = true;
+            lowest.disabled = true;
+            $(function() {
+                $.getJSON(`/download/${data_["code"]}/best`, 
+                function(response) {
+                    window.open(response["link"]);
+                })
+            })
+        }
+        function lowest_download() {
+            let highest = document.getElementById("highest-button");
+            let lowest = document.getElementById("lowest-button");
+            highest.disabled = true;
+            lowest.disabled = true;
+            $(function() {
+                $.getJSON(`/download/${data_["code"]}/lowest`, 
+                function(response) {
+                    window.open(response["link"]);
+                })
+            })
+        }
     </script>
-    <div class="center-container" style="margin-top: 20%;">
+    <div class="center-container" style="margin-bottom: 20%;">
         <h1 class="heading display-5" id="main-heading" style="padding-bottom: 3px !important;">YouTube Video Downloader</h1>
         <div id="main-box">
             <div class="input-group input-group-lg">
@@ -109,13 +135,12 @@
               <h6 class="card-title text-center text-wrap" id="video-title">Video Title</h6>
               <p class="card-text text-center" id = "duration">Time</p>
               <div class="d-grid gap-1">
-                <button id="highest-button" type="button" class="btn btn-danger mt-2">Highest: 1060p60</button>
-                <button id="lowest-button" type="button" class="btn btn-danger">Lowest: 480p30</button>
+                <button onclick="highest_download()" id="highest-button" type="button" class="btn btn-danger mt-2"></button>
+                <button onclick="lowest_download()" id="lowest-button" type="button" class="btn btn-danger"></button>
                 <!-- <button type="button" class="btn btn-danger">Highest: 256kbps</button> -->
               </div>
             </div>
           </div>
-          
         <!-- https://i.ytimg.com/vi/5NqitWbBim8/maxresdefault.jpg -->
         
     </div>

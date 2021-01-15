@@ -1,3 +1,6 @@
+import tempfile
+import pytube
+from pytube.extract import video_id
 from quart import Quart, render_template
 from googleapiclient.discovery import build
 import json
@@ -6,6 +9,14 @@ import re
 from typing import *
 import jsonify
 import datetime, calendar
+import tempfile
+import aiohttp
+import functools
+import requests
+import ffmpeg
+from moviepy.editor import *
+import os
+
 
 config_read = open('./config.json', 'r')
 config = json.load(config_read)
@@ -94,7 +105,7 @@ def getReadableTimeBetween(first, last, reverse=False):
     if msg == "":
         return "0 seconds"
     else:
-        return msg[:-2]	
+        return msg[:-2]
 
 def get_seconds(timeString: str) -> Optional[int]:
     time_regex = re.compile("(?:(\d{1,5})(h|s|m|d))+?")
@@ -110,13 +121,24 @@ def get_seconds(timeString: str) -> Optional[int]:
             return None
     return time
 
-async def download_video(video_code : str):
+data = {}
+# bestStream : pytube.Stream = None
+# lowestStream : pytube.Stream = None
+
+async def get_yt_obj(video_code):
+    url = f'https://www.youtube.com/watch?v={video_code}'
+    yt_obj = YouTube(url)
+    audio : pytube.Stream = sorted(yt_obj.streams.filter(type="audio", only_audio=True), key=lambda stream: int(stream.bitrate), reverse=True)[0]
+    bestStream : pytube.Stream = sorted(yt_obj.streams.filter(type="video", only_video=True), key=lambda stream: int(stream.resolution.replace("p", "")), reverse=True)[0]
+    lowestStream : pytube.Stream = sorted(yt_obj.streams.filter(type="video", only_video=True), key=lambda stream: int(stream.resolution.replace("p", "")), reverse=False)[0]
+    return (bestStream, lowestStream, yt_obj, audio)
+
+async def get_data(video_code : str):
     """
-    Returns the downloaded video's link.
+    Returns data of the video (thumbnail, duration, options available, etc.).
     Returns None if the video could not be found.
     Returns None if the video is longer than 15 minutes.
     """
-    data = {}
     results = client.videos().list(
         part="id,snippet,contentDetails",
         id=video_code
@@ -131,17 +153,50 @@ async def download_video(video_code : str):
     # elif time > 15*60:
     #     return {"status":"error", "message":"Video duration more than 15 minutes."}
     else:
-        url = f'https://www.youtube.com/watch?v={video_code}'
-        yt_obj = YouTube(url)
-        best = sorted(yt_obj.streams.filter(type="video"), key=lambda stream: int(stream.resolution.replace("p", "")), reverse=True)[0]
-        lowest = sorted(yt_obj.streams.filter(type="video"), key=lambda stream: int(stream.resolution.replace("p", "")), reverse=False)[0]
-        audio = sorted(yt_obj.streams.filter(type="audio"), key=lambda stream: int(stream.bitrate))[0]
+        bestStream, lowestStream, yt_obj, audio = await get_yt_obj(video_code)
+        # audio = sorted(yt_obj.streams.filter(type="audio"), key=lambda stream: int(stream.bitrate))[0]
+        data["code"] = video_code
         data["thumbnail"] = results["items"][0]["snippet"]["thumbnails"]["maxres"]["url"]
         data["title"] = results["items"][0]["snippet"]["title"]
         data["duration"] = time
-        data["highest"] = best.resolution + str(best.fps)
-        data["lowest"] = lowest.resolution + str(lowest.fps)
+        data["highest"] = bestStream.resolution + str(bestStream.fps)
+        data["lowest"] = lowestStream.resolution + str(lowestStream.fps)
         return data
+
+async def get_link(path):
+    files = {
+        'file' : ('your video.mp4', open(path, 'rb'))
+    }
+    response = requests.post('https://file.io/?expires=2d', files=files)
+    return response
+
+@app.route("/download", defaults={'quality' : 'best', 'code' : ''})
+@app.route("/download/<code>/<quality>")
+async def download(code, quality):
+    bestStream, lowestStream, yt_obj, audio = await get_yt_obj(code)
+    with tempfile.TemporaryFile() as file:
+        if quality == 'best':
+            bVidPath = bestStream.download(filename=code + "-video")
+            audioPath = audio.download(filename=code + "-audio")
+            audioclip = AudioFileClip(audioPath)
+            videoclip = VideoFileClip(bVidPath)
+            audioclip2 = CompositeAudioClip([audioclip])
+            videoclip.audio = audioclip2
+            videoclip.write_videofile("your video.mp4")
+            # audioclip = ffmpeg.input(audioPath)
+            # videoclip = ffmpeg.input(bVidPath)
+            # ffmpeg.concat(videoclip, audioclip, v=1, a=1).output('your video.mp4').run()
+            link = await get_link(os.getcwd() + '/your video.mp4')
+            file.seek(0)
+            return link
+        elif quality == 'lowest':
+            bVidPath = lowestStream.download(filename=f"{code}-lowest.mp4")
+            link = await get_link(bVidPath)
+            file.seek(0)
+            return link
+        else:
+            file.seek(0)
+            return None
  
 @app.route('/')
 async def index():
@@ -149,6 +204,6 @@ async def index():
 
 @app.route('/convert/<code>')
 async def convert(code):
-    return await download_video(code)
+    return await get_data(code)
 
 app.run()
