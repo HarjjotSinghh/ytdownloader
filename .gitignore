@@ -131,4 +131,4 @@ dmypy.json
 # config file
 config.json
 
-src/static/font-awesome-4.7.0
+/src/static/font-awesome-4.7.0
